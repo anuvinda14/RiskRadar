@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createWorker } from 'tesseract.js';
+import jsQR from 'jsqr';
 import { useApp } from '@/context/AppContext';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/Button';
@@ -7,7 +8,7 @@ import { TextAreaField, InputField } from '@/components/ui/InputField';
 import { createAnalysisResult, createAnalysisResultAsync } from '@/lib/scamAnalysis';
 import { BUILT_IN_EXAMPLES } from '@/lib/scamAnalyzer';
 import { saveHistoryEntry } from '@/lib/storage';
-import { ImagePlus, Upload, FileImage, Sparkles, Loader2 } from 'lucide-react';
+import { ImagePlus, Upload, FileImage, Sparkles, Loader2, QrCode } from 'lucide-react';
 import type { CheckType } from '@/types';
 
 interface CheckPageProps {
@@ -64,13 +65,52 @@ export function CheckPage({ checkType }: CheckPageProps) {
       worker = await createWorker('eng');
       const { data } = await worker.recognize(imageFile);
       setText(data.text.trim());
-      if (!data.text.trim()) setError('No readable text found. Please type or paste the message below.');
+      if (!data.text.trim()) setError(t('check.noText'));
     } catch {
-      setError('Could not read the image. Check your internet connection or paste the text below.');
+      setError(t('check.ocrError'));
     } finally {
       if (worker) await worker.terminate();
       setReading(false);
     }
+  };
+
+  const readQrImage = async (file: File) => {
+    setReading(true);
+    setError('');
+    setText('');
+    try {
+      const bitmap = await createImageBitmap(file);
+      const longestSide = Math.max(bitmap.width, bitmap.height);
+      const scale = longestSide > 2200 ? 2200 / longestSide : 1;
+      const width = Math.max(1, Math.round(bitmap.width * scale));
+      const height = Math.max(1, Math.round(bitmap.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      if (!context) throw new Error('Canvas unavailable');
+      context.drawImage(bitmap, 0, 0, width, height);
+      bitmap.close();
+      const image = context.getImageData(0, 0, width, height);
+      const decoded = jsQR(image.data, width, height, { inversionAttempts: 'attemptBoth' });
+      if (!decoded?.data.trim()) {
+        setError(t('qr.notFound'));
+        return;
+      }
+      setText(decoded.data.trim());
+    } catch {
+      setError(t('qr.readError'));
+    } finally {
+      setReading(false);
+    }
+  };
+
+  const acceptImage = (file: File): boolean => {
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+      setError(t('check.invalidImage'));
+      return false;
+    }
+    return true;
   };
 
   const handleAnalyze = async () => {
@@ -101,6 +141,7 @@ export function CheckPage({ checkType }: CheckPageProps) {
 
   const isUrl = checkType === 'url' || checkType === 'qr';
   const isScreenshot = checkType === 'screenshot';
+  const isQr = checkType === 'qr';
   const hasExamples = checkType === 'message' || checkType === 'emailAd';
   const isDisabled = loading || reading || text.trim().length < 3;
 
@@ -119,7 +160,7 @@ export function CheckPage({ checkType }: CheckPageProps) {
             <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-8 text-center">
               {fileName ? (
                 <div className="flex flex-col items-center gap-3">
-                  {preview ? <img src={preview} alt="Uploaded screenshot" className="max-h-72 max-w-full rounded-lg object-contain" /> : <FileImage size={48} className="text-teal-600" />}
+                  {preview ? <img src={preview} alt={t('check.imageAlt')} className="max-h-72 max-w-full rounded-lg object-contain" /> : <FileImage size={48} className="text-teal-600" />}
                   <p className="font-medium text-slate-700" style={{ fontSize: 'var(--text-base)' }}>
                     {fileName}
                   </p>
@@ -144,10 +185,7 @@ export function CheckPage({ checkType }: CheckPageProps) {
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
-                      setError('Choose a JPG, PNG, or WEBP image smaller than 10 MB.');
-                      return;
-                    }
+                    if (!acceptImage(file)) return;
                     setFileName(file.name); setImageFile(file); setText(''); setError('');
                   }
                   e.target.value = '';
@@ -164,11 +202,51 @@ export function CheckPage({ checkType }: CheckPageProps) {
             </div>
             <div className="mt-4 space-y-4">
               <Button onClick={readImage} disabled={!imageFile || reading || loading}>
-                {reading ? 'Reading image…' : 'Extract text from image'}
+                {reading ? t('check.readingImage') : t('check.extractText')}
               </Button>
-              <p className="text-sm text-slate-600">English text extraction runs in your browser. Review the text before analyzing; only the reviewed text is sent to the model.</p>
-              <TextAreaField id="extracted-text" label="Review or paste the screenshot text" value={text} onChange={(e) => setText(e.target.value)} rows={6} disabled={reading || loading} />
+              <p className="text-sm text-slate-600">{t('check.ocrPrivacy')}</p>
+              <TextAreaField id="extracted-text" label={t('check.reviewText')} value={text} onChange={(e) => setText(e.target.value)} rows={6} disabled={reading || loading} />
             </div>
+          </div>
+        ) : isQr ? (
+          <div className="space-y-5">
+            <div>
+              <label className="mb-2 block font-semibold text-slate-700" style={{ fontSize: 'var(--text-lg)' }}>{t('qr.uploadTitle')}</label>
+              <div className="rounded-2xl border-2 border-dashed border-blue-200 bg-white p-6 text-center">
+                {preview ? <img src={preview} alt={t('check.imageAlt')} className="mx-auto max-h-64 max-w-full rounded-xl object-contain" /> : <QrCode size={52} className="mx-auto text-blue-500" />}
+                <p className="mx-auto mt-3 max-w-lg text-slate-600">{t('qr.uploadHint')}</p>
+                <input
+                  id="qr-upload"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  disabled={reading || loading}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file && acceptImage(file)) {
+                      setFileName(file.name);
+                      setImageFile(file);
+                      void readQrImage(file);
+                    }
+                    event.target.value = '';
+                  }}
+                />
+                <label htmlFor="qr-upload" className="mt-4 inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-xl bg-blue-700 px-5 py-3 font-bold text-white hover:bg-blue-800">
+                  {reading ? <Loader2 size={20} className="animate-spin" /> : <Upload size={20} />}
+                  {reading ? t('qr.scanning') : t('qr.chooseImage')}
+                </label>
+                {fileName && <p className="mt-2 text-sm text-slate-500">{fileName}</p>}
+                <p className="mt-3 font-semibold text-emerald-700">{t('qr.localPrivacy')}</p>
+              </div>
+            </div>
+            <InputField
+              id="check-input"
+              label={text ? t('qr.decoded') : t('qr.pasteInstead')}
+              placeholder={t('check.qr.placeholder')}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+            />
           </div>
         ) : isUrl ? (
           <InputField
@@ -194,7 +272,7 @@ export function CheckPage({ checkType }: CheckPageProps) {
           <div className="mt-4">
             <p className="mb-2 flex items-center gap-2 font-semibold text-slate-600" style={{ fontSize: 'var(--text-base)' }}>
               <Sparkles size={18} className="text-teal-600" />
-              Try a built-in example:
+              {t('check.tryExample')}
             </p>
             <div className="flex flex-wrap gap-2">
               {BUILT_IN_EXAMPLES.map((example) => (
@@ -217,7 +295,7 @@ export function CheckPage({ checkType }: CheckPageProps) {
           {loading && (
             <div className="flex items-center gap-3 text-slate-600" style={{ fontSize: 'var(--text-base)' }}>
               <Loader2 size={24} className="animate-spin text-teal-600" />
-              Analyzing with the phishing detection model…
+              {t('check.analyzing')}
             </div>
           )}
           <Button onClick={handleAnalyze} disabled={isDisabled}>

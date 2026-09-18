@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import type { Language, Settings, TrustedContact } from '@/types';
 import { translations } from '@/i18n/translations';
 import type { TranslationKey } from '@/i18n/translations';
+import { appText } from '@/i18n/appText';
+import type { AppTextKey } from '@/i18n/appText';
 import {
   DEFAULT_SETTINGS,
   clearTrustedContact,
@@ -28,7 +30,7 @@ interface AppContextValue {
   setLanguage: (lang: Language) => void;
   toggleLargerText: () => void;
   toggleHighContrast: () => void;
-  t: (key: TranslationKey) => string;
+  t: (key: TranslationKey | AppTextKey) => string;
   route: Route;
   navigate: (route: Route) => void;
   goBack: () => void;
@@ -112,7 +114,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback(
-    (key: TranslationKey) => translations[settings.language][key] ?? translations.en[key] ?? key,
+    (key: TranslationKey | AppTextKey) => {
+      if (key in appText.en) return appText[settings.language][key as AppTextKey] ?? appText.en[key as AppTextKey];
+      return translations[settings.language][key as TranslationKey] ?? translations.en[key as TranslationKey] ?? key;
+    },
     [settings.language],
   );
 

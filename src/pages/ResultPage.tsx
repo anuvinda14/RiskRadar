@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { getHistoryEntry } from '@/lib/storage';
 import { speak, stopSpeaking, isSpeechSupported } from '@/lib/speech';
 import type { RiskLevel } from '@/types';
+import { riskText } from '@/i18n/riskText';
 
 interface ResultPageProps {
   resultId: string;
@@ -63,12 +64,21 @@ export function ResultPage({ resultId }: ResultPageProps) {
   const riskLabel = t(riskLabelKey[result.riskLevel]);
   const iconConfig = riskIconConfig[result.riskLevel];
 
-  const reasons = result.detectedSignals.length > 0
-    ? result.detectedSignals.map((s) => s.description)
-    : result.reasons;
-  const steps = result.recommendedActions.length > 0 ? result.recommendedActions : result.safetySteps;
+  const localizedRisk = riskText[settings.language];
+  const reasons = settings.language === 'en'
+    ? (result.detectedSignals.length > 0 ? result.detectedSignals.map((s) => s.description) : result.reasons)
+    : (result.detectedSignals.length > 0
+      ? result.detectedSignals.map((signal) => localizedRisk.reasons[signal.category] ?? localizedRisk.noSignals)
+      : [localizedRisk.noSignals]);
+  const steps = settings.language === 'en'
+    ? (result.recommendedActions.length > 0 ? result.recommendedActions : result.safetySteps)
+    : localizedRisk.actions;
+  const summary = settings.language === 'en' ? result.summary : localizedRisk.summary[result.riskLevel];
+  const prominentWarning = result.prominentWarning
+    ? (settings.language === 'en' ? result.prominentWarning : localizedRisk.strongWarning)
+    : '';
 
-  const warningText = `${t('result.warningText')}: ${riskLabel}. ${result.summary || reasons.join('. ')}. ${t('result.safetySteps')}: ${steps.join('. ')}`;
+  const warningText = `${t('result.warningText')}: ${riskLabel}. ${summary || reasons.join('. ')}. ${t('result.safetySteps')}: ${steps.join('. ')}`;
 
   const handleReadAloud = () => {
     if (isSpeaking) {
@@ -87,7 +97,7 @@ export function ResultPage({ resultId }: ResultPageProps) {
       return;
     }
     const subject = `RiskRadar ${t('result.warningText')}: ${riskLabel}`;
-    const body = `${t('result.riskLevel')}: ${riskLabel}\n${t('result.riskScore')}: ${result.riskScore}/100\n\n${result.summary || ''}\n\n${t('result.reasons')}:\n${reasons.map((r) => `- ${r}`).join('\n')}\n\n${t('result.safetySteps')}:\n${steps.map((s) => `- ${s}`).join('\n')}`;
+    const body = `${t('result.riskLevel')}: ${riskLabel}\n${t('result.riskScore')}: ${result.riskScore}/100\n\n${summary || ''}\n\n${t('result.reasons')}:\n${reasons.map((r) => `- ${r}`).join('\n')}\n\n${t('result.safetySteps')}:\n${steps.map((s) => `- ${s}`).join('\n')}`;
 
     if (trustedContact.email) {
       const mailto = `mailto:${trustedContact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -114,34 +124,34 @@ export function ResultPage({ resultId }: ResultPageProps) {
           </div>
           <RiskBadge level={result.riskLevel} label={riskLabel} />
           <p className="mt-3 text-slate-600" style={{ fontSize: 'var(--text-lg)' }}>
-            {result.apiSource ? 'Email model score' : 'Rule-based score'}: <span className="font-bold text-slate-800">{result.riskScore}/100</span>
+            {result.apiSource ? t('result.emailModelScore') : t('result.ruleScore')}: <span className="font-bold text-slate-800">{result.riskScore}/100</span>
           </p>
         </div>
 
-        {result.prominentWarning && (
+        {prominentWarning && (
           <div className="mb-6 flex items-start gap-3 rounded-xl border-2 border-red-500 bg-red-50 p-4">
             <AlertCircle size={28} className="mt-0.5 flex-shrink-0 text-red-600" />
             <div>
               <p className="font-bold text-red-800" style={{ fontSize: 'var(--text-lg)' }}>
-                Safety Warning
+                {t('result.safetyWarning')}
               </p>
               <p className="mt-1 text-red-700" style={{ fontSize: 'var(--text-base)' }}>
-                {result.prominentWarning}
+                {prominentWarning}
               </p>
             </div>
           </div>
         )}
 
-        {result.summary && (
+        {summary && (
           <Card className="mb-6 border-l-4 border-l-teal-500">
             <p className="text-slate-800" style={{ fontSize: 'var(--text-lg)' }}>
-              {result.summary}
+              {summary}
             </p>
           </Card>
         )}
 
         <p className="mb-4 text-center text-sm text-slate-600" role="status">
-          {result.apiSource ? 'Official-dataset model connected. This score is not a verified chance of fraud.' : result.isOfflineFallback ? 'Basic offline analysis — model unavailable; local rules only.' : 'Local rules only — no model prediction.'}
+          {result.apiSource ? t('result.cloudStatus') : result.isOfflineFallback ? t('result.offlineStatus') : t('result.localStatus')}
         </p>
         {result.input && (
           <Card className="mb-6">
@@ -174,7 +184,7 @@ export function ResultPage({ resultId }: ResultPageProps) {
           {hasStructuredData && result.highlightedPhrases.length > 0 && (
             <div className="mt-4 border-t border-slate-200 pt-3">
               <p className="mb-2 font-semibold text-slate-600" style={{ fontSize: 'var(--text-base)' }}>
-                Flagged phrases:
+                {t('result.flaggedPhrases')}
               </p>
               <div className="flex flex-wrap gap-2">
                 {result.highlightedPhrases.map((phrase, i) => (
@@ -211,7 +221,7 @@ export function ResultPage({ resultId }: ResultPageProps) {
               className="flex w-full items-center justify-between font-semibold text-slate-700"
               style={{ fontSize: 'var(--text-base)' }}
             >
-              <span>Technical Details</span>
+              <span>{t('result.technicalDetails')}</span>
               {showTechnicalDetails ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </button>
             {showTechnicalDetails && (
@@ -220,29 +230,29 @@ export function ResultPage({ resultId }: ResultPageProps) {
                   <>
                     <div className="flex items-center gap-2 text-slate-700" style={{ fontSize: 'var(--text-base)' }}>
                       <Cpu size={18} className="text-teal-600" />
-                      <span className="font-semibold">Model:</span>
+                      <span className="font-semibold">{t('result.model')}</span>
                       <span className="font-mono text-slate-600">{result.apiSource}</span>
                     </div>
                     {result.apiPrediction && (
                       <div className="flex items-center gap-2 text-slate-700" style={{ fontSize: 'var(--text-base)' }}>
-                        <span className="font-semibold">Prediction:</span>
+                        <span className="font-semibold">{t('result.prediction')}</span>
                         <span className={result.apiPrediction === 'phishing' ? 'font-bold text-red-600' : 'font-bold text-green-600'}>
-                          {result.apiPrediction}
+                          {settings.language === 'en' ? result.apiPrediction : (localizedRisk.predictions[result.apiPrediction] ?? result.apiPrediction)}
                         </span>
                       </div>
                     )}
                     {result.apiDisclaimer && (
                       <div className="flex items-start gap-2 text-slate-500" style={{ fontSize: 'var(--text-base)' }}>
                         <Info size={16} className="mt-0.5 flex-shrink-0" />
-                        <span>{result.apiDisclaimer}</span>
+                        <span>{settings.language === 'en' ? result.apiDisclaimer : localizedRisk.disclaimer}</span>
                       </div>
                     )}
                   </>
                 ) : (
                   <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-amber-800" style={{ fontSize: 'var(--text-base)' }}>
                     <WifiOff size={18} />
-                    <span className="font-semibold">Basic offline analysis</span>
-                    <span className="text-amber-700">— the phishing model could not be reached, so local rules were used instead.</span>
+                    <span className="font-semibold">{t('result.basicOffline')}</span>
+                    <span className="text-amber-700">{t('result.offlineDetail')}</span>
                   </div>
                 )}
               </div>
