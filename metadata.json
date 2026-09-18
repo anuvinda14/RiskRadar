@@ -1,0 +1,27 @@
+{
+  "model_name": "code-cortex-ceas08-tfidf-logreg-v1",
+  "dataset": "Official Code Cortex 3.0 Security dataset / CEAS_08.csv",
+  "raw_rows": 39154,
+  "clean_rows": 38963,
+  "train_rows": 31170,
+  "test_rows": 7793,
+  "label_mapping": {
+    "0": "legitimate",
+    "1": "phishing"
+  },
+  "threshold": 0.5,
+  "metrics": {
+    "accuracy": 0.994996,
+    "precision": 0.996762,
+    "recall": 0.994233,
+    "f1": 0.995496,
+    "roc_auc": 0.999626
+  },
+  "trained_at_utc": "2026-09-18T05:01:13.306182+00:00",
+  "random_state": 42,
+  "limitations": [
+    "The training data is predominantly English email, not modern WhatsApp/SMS data.",
+    "A risk score is not proof that a message is fraudulent or safe.",
+    "Performance on new domains and regional languages requires separate validation."
+  ]
+}
