@@ -9,7 +9,8 @@ import { createAnalysisResult, createAnalysisResultAsync } from '@/lib/scamAnaly
 import { BUILT_IN_EXAMPLES } from '@/lib/scamAnalyzer';
 import { saveHistoryEntry } from '@/lib/storage';
 import { ImagePlus, Upload, FileImage, Sparkles, Loader2, QrCode } from 'lucide-react';
-import type { CheckType } from '@/types';
+import type { CheckType, RiskLevel } from '@/types';
+import { featureText } from '@/i18n/featureText';
 
 interface CheckPageProps {
   checkType: CheckType;
@@ -39,8 +40,12 @@ const titleKey: Record<CheckType, 'home.scanScreenshot' | 'home.checkMessage' | 
   emailAd: 'home.checkEmailAd',
 };
 
+const exampleRiskKey: Record<RiskLevel, 'result.safe' | 'result.caution' | 'result.highRisk'> = {
+  safe: 'result.safe', caution: 'result.caution', high: 'result.highRisk',
+};
+
 export function CheckPage({ checkType }: CheckPageProps) {
-  const { t, navigate } = useApp();
+  const { t, navigate, settings } = useApp();
   const [text, setText] = useState('');
   const [fileName, setFileName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,6 +53,8 @@ export function CheckPage({ checkType }: CheckPageProps) {
   const [preview, setPreview] = useState('');
   const [reading, setReading] = useState(false);
   const [error, setError] = useState('');
+  const [sender, setSender] = useState('');
+  const feature = featureText[settings.language];
 
   useEffect(() => {
     if (!imageFile) { setPreview(''); return; }
@@ -120,6 +127,7 @@ export function CheckPage({ checkType }: CheckPageProps) {
     const usesApi = checkType === 'message' || checkType === 'emailAd' || checkType === 'screenshot';
     if (!usesApi) {
       const result = createAnalysisResult(input, checkType);
+      result.sender = sender.trim() || undefined;
       saveHistoryEntry(result);
       navigate({ name: 'result', resultId: result.id });
       return;
@@ -128,6 +136,7 @@ export function CheckPage({ checkType }: CheckPageProps) {
     setLoading(true);
     try {
       const result = await createAnalysisResultAsync(input, checkType);
+      result.sender = sender.trim() || undefined;
       saveHistoryEntry(result);
       navigate({ name: 'result', resultId: result.id });
     } finally {
@@ -268,6 +277,12 @@ export function CheckPage({ checkType }: CheckPageProps) {
           />
         )}
 
+        {(checkType === 'message' || checkType === 'emailAd' || checkType === 'screenshot') && (
+          <div className="mt-4">
+            <InputField id="sender-input" label={feature.sender.label} placeholder={feature.sender.placeholder} value={sender} onChange={(event) => setSender(event.target.value)} disabled={loading || reading} />
+          </div>
+        )}
+
         {hasExamples && (
           <div className="mt-4">
             <p className="mb-2 flex items-center gap-2 font-semibold text-slate-600" style={{ fontSize: 'var(--text-base)' }}>
@@ -283,7 +298,7 @@ export function CheckPage({ checkType }: CheckPageProps) {
                   className="rounded-full border-2 border-teal-200 bg-teal-50 px-4 py-2 font-medium text-teal-700 transition-colors hover:border-teal-400 hover:bg-teal-100 disabled:opacity-50"
                   style={{ fontSize: 'var(--text-base)' }}
                 >
-                  {example.label}
+                  {t(exampleRiskKey[example.expectedRisk])}
                 </button>
               ))}
             </div>

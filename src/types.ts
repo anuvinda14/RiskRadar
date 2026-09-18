@@ -4,6 +4,19 @@ export type CheckType = 'screenshot' | 'message' | 'url' | 'qr' | 'emailAd';
 
 export type Language = 'en' | 'hi' | 'bn' | 'ta' | 'te' | 'ml';
 
+export type MessageCategory = 'advertisement' | 'banking' | 'possible_fraud' | 'phishing' | 'otp' | 'delivery' | 'work' | 'personal' | 'social_media' | 'unknown';
+
+export interface SenderRiskProfile {
+  id: string;
+  displayName: string;
+  reports: number;
+  suspiciousScans: number;
+  notSpam: number;
+  blocked: boolean;
+  categories: MessageCategory[];
+  lastActivity: number;
+}
+
 export interface DetectedSignal {
   category: string;
   description: string;
@@ -29,6 +42,8 @@ export interface AnalysisResult {
   apiDisclaimer: string;
   apiPrediction: string;
   isOfflineFallback: boolean;
+  category?: MessageCategory;
+  sender?: string;
 }
 
 export interface TrustedContact {

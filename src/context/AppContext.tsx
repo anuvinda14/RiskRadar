@@ -23,7 +23,8 @@ export type Route =
   | { name: 'result'; resultId: string }
   | { name: 'contact' }
   | { name: 'history' }
-  | { name: 'settings' };
+  | { name: 'settings' }
+  | { name: 'privacy' };
 
 interface AppContextValue {
   settings: Settings;

@@ -8,6 +8,7 @@ import { SettingsPage } from '@/pages/SettingsPage';
 import { useState, useCallback } from 'react';
 import { LaunchExperience } from '@/components/LaunchExperience';
 import { LearnPage, ScanPage, ProfilePage } from '@/pages/ExtraPages';
+import { PrivacyPage } from '@/pages/PrivacyPage';
 
 function Router() {
   const { route } = useApp();
@@ -16,6 +17,7 @@ function Router() {
     case 'learn': return <LearnPage />;
     case 'scan': return <ScanPage />;
     case 'profile': return <ProfilePage />;
+    case 'privacy': return <PrivacyPage />;
     case 'home':
       return <HomePage />;
     case 'check':

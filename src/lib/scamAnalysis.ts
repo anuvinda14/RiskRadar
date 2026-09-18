@@ -1,6 +1,7 @@
 import type { AnalysisResult, CheckType, RiskLevel } from '@/types';
 import { analyzeText, buildSummary } from '@/lib/scamAnalyzer';
 import { fetchApiAnalysis } from '@/lib/scamApi';
+import { categorizeMessage } from '@/lib/categories';
 
 interface ScamSignal {
   category: string;
@@ -288,6 +289,7 @@ export function createAnalysisResult(input: string, type: CheckType): AnalysisRe
   const partial = analyzeContent(input, type);
   return {
     ...partial,
+    category: categorizeMessage(input, type, partial.riskLevel, partial.detectedSignals.map((signal) => signal.category)),
     id: crypto.randomUUID(),
     timestamp: Date.now(),
   };
@@ -297,6 +299,7 @@ export async function createAnalysisResultAsync(input: string, type: CheckType):
   const partial = await analyzeContentAsync(input, type);
   return {
     ...partial,
+    category: categorizeMessage(input, type, partial.riskLevel, partial.detectedSignals.map((signal) => signal.category)),
     id: crypto.randomUUID(),
     timestamp: Date.now(),
   };

@@ -7,9 +7,13 @@ This is the edited frontend exported from Bolt. You do not need Bolt tokens to w
 With Node.js and pnpm installed:
 
 ```
+cp .env.example .env
 pnpm install
 pnpm dev --host 127.0.0.1
 ```
+
+Add the current prediction API address to `.env` before starting the app. Never
+commit `.env`; `.env.example` is the safe template for teammates.
 
 Open the local address printed by the server. For checks: `pnpm test`, `pnpm typecheck`, `pnpm build`.
 
@@ -21,6 +25,23 @@ and restart the development server (or rebuild for deployment).
 The Python API and model stay in your separate backend repository.
 
 ## Changes in this revision
+
+### Privacy, language and QR revision
+
+- All six interface languages now cover navigation, scan instructions, Scam
+  Academy lessons, privacy status, categories and analysis explanations.
+- QR images can be uploaded and decoded locally with `jsQR`. The destination is
+  displayed and checked without being opened; manual paste remains available.
+- Each result visibly says whether processing was local or used the cloud model.
+- Scans receive a local category and History can be filtered by category.
+- Optional sender/source input enables local Report, Not Spam and RiskRadar-only
+  Block actions. These do not block calls or texts at operating-system level.
+- The Privacy dashboard shows local/cloud counts, reported senders, data export,
+  and a two-step local delete control.
+- Newly saved history redacts common OTP/PIN/password/card-number patterns and is
+  capped at 1,200 characters. Existing older entries are not silently rewritten.
+- Demo samples remain available on message and email checks and use the real
+  analysis flow.
 
 ### Layout and Academy revision
 
@@ -57,9 +78,13 @@ different meanings and are labeled separately.
 
 OCR needs an internet connection on first use to load its language/worker assets.
 Only reviewed text is submitted to the API; images are processed in the browser.
-QR currently accepts pasted destination text, not camera scanning/image decoding.
-URL checks are heuristics, not a live reputation service. New analysis explanations
-are English; the existing language selector does not translate model results.
+QR camera capture is not included; users upload an image or paste its destination.
+URL checks are heuristics, not a live reputation service. Interface and rule
+explanations are translated, but the trained model itself remains English-first.
+
+History currently uses browser `localStorage`, not account sync or end-to-end
+encrypted storage. Sender reports are local observations, not proof that a person
+is fraudulent and are never published by this frontend.
 
 The tunnel is temporary. Existing history entries retain their original results;
 run a new check to see the corrected behavior. Use fictional examples for demos.

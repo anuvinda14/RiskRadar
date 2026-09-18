@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { Volume2, VolumeX, Send, CheckCircle2, AlertTriangle, ShieldCheck, AlertOctagon, RotateCcw, Lightbulb, Cpu, Info, WifiOff, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { Volume2, VolumeX, Send, CheckCircle2, AlertTriangle, ShieldCheck, AlertOctagon, RotateCcw, Lightbulb, Cpu, Info, WifiOff, ChevronDown, ChevronUp, AlertCircle, Flag, Ban, ThumbsUp, Trash2, Tag } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/Button';
 import { RiskBadge } from '@/components/ui/RiskBadge';
 import { Card } from '@/components/ui/Card';
-import { getHistoryEntry } from '@/lib/storage';
+import { deleteHistoryEntry, getHistoryEntry, updateSenderProfile } from '@/lib/storage';
 import { speak, stopSpeaking, isSpeechSupported } from '@/lib/speech';
 import type { RiskLevel } from '@/types';
 import { riskText } from '@/i18n/riskText';
+import { categoryForResult, senderIdentifier } from '@/lib/categories';
+import { featureText } from '@/i18n/featureText';
 
 interface ResultPageProps {
   resultId: string;
@@ -48,6 +50,7 @@ export function ResultPage({ resultId }: ResultPageProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [sent, setSent] = useState(false);
   const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
+  const [senderNotice, setSenderNotice] = useState('');
 
   const result = getHistoryEntry(resultId);
 
@@ -77,6 +80,18 @@ export function ResultPage({ resultId }: ResultPageProps) {
   const prominentWarning = result.prominentWarning
     ? (settings.language === 'en' ? result.prominentWarning : localizedRisk.strongWarning)
     : '';
+  const feature = featureText[settings.language];
+  const category = categoryForResult(result);
+  const sender = senderIdentifier(result);
+
+  const saveSenderAction = (action: 'report' | 'block' | 'notSpam') => {
+    if (!sender) {
+      setSenderNotice(feature.sender.missing);
+      return;
+    }
+    updateSenderProfile(sender, action, category, result.riskLevel !== 'safe');
+    setSenderNotice(feature.sender.saved);
+  };
 
   const warningText = `${t('result.warningText')}: ${riskLabel}. ${summary || reasons.join('. ')}. ${t('result.safetySteps')}: ${steps.join('. ')}`;
 
@@ -153,6 +168,7 @@ export function ResultPage({ resultId }: ResultPageProps) {
         <p className="mb-4 text-center text-sm text-slate-600" role="status">
           {result.apiSource ? t('result.cloudStatus') : result.isOfflineFallback ? t('result.offlineStatus') : t('result.localStatus')}
         </p>
+        <div className="mb-5 flex flex-wrap justify-center gap-2"><span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 font-semibold text-blue-800"><Tag size={16}/>{feature.categories[category]}</span>{sender && <span className="rounded-full bg-slate-100 px-3 py-2 font-semibold text-slate-700">{sender}</span>}</div>
         {result.input && (
           <Card className="mb-6">
             <p className="mb-1 font-semibold text-slate-500" style={{ fontSize: 'var(--text-base)' }}>
@@ -261,6 +277,15 @@ export function ResultPage({ resultId }: ResultPageProps) {
         )}
 
         <div className="space-y-3">
+          <Card>
+            <p className="mb-3 text-sm text-slate-500">{feature.sender.localOnly}</p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <Button onClick={() => saveSenderAction('report')} variant="secondary"><Flag size={18}/>{feature.sender.report}</Button>
+              <Button onClick={() => saveSenderAction('block')} variant="secondary"><Ban size={18}/>{feature.sender.block}</Button>
+              <Button onClick={() => saveSenderAction('notSpam')} variant="secondary"><ThumbsUp size={18}/>{feature.sender.notSpam}</Button>
+            </div>
+            {senderNotice && <p role="status" className="mt-3 text-sm font-semibold text-blue-800">{senderNotice}</p>}
+          </Card>
           {isSpeechSupported() && (
             <Button onClick={handleReadAloud} fullWidth variant={isSpeaking ? 'secondary' : 'primary'}>
               {isSpeaking ? <VolumeX size={22} /> : <Volume2 size={22} />}
@@ -282,6 +307,9 @@ export function ResultPage({ resultId }: ResultPageProps) {
           <Button onClick={() => navigate({ name: 'home' })} fullWidth variant="ghost">
             <RotateCcw size={20} />
             {t('result.newCheck')}
+          </Button>
+          <Button onClick={() => { deleteHistoryEntry(result.id); navigate({ name: 'history' }); }} fullWidth variant="ghost" className="text-red-700 hover:bg-red-50">
+            <Trash2 size={20}/>{feature.sender.delete}
           </Button>
         </div>
       </div>

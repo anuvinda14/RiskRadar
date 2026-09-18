@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { GraduationCap, ImagePlus, MessageSquare, Link2, QrCode, Mail, Phone, Settings, User } from 'lucide-react';
+import { GraduationCap, ImagePlus, MessageSquare, Link2, QrCode, Mail, Phone, Settings, User, ShieldCheck } from 'lucide-react';
 import { Layout } from '@/components/Layout';
 import { useApp } from '@/context/AppContext';
 import type { CheckType } from '@/types';
 import { academyContent } from '@/i18n/academyContent';
+import { featureText } from '@/i18n/featureText';
 
 export function LearnPage() {
   const { t, settings } = useApp();
@@ -41,6 +42,7 @@ export function ScanPage() {
 }
 
 export function ProfilePage() {
-  const {navigate, trustedContact, t} = useApp();
-  return <Layout><h1 className="mb-6 flex items-center gap-3 text-3xl font-bold"><User/> {t('profile.title')}</h1><div className="grid gap-4 sm:grid-cols-2"><button onClick={() => navigate({name:'contact'})} className="rr-history-item text-left"><Phone className="mb-3 text-blue-700"/><h2 className="text-xl font-bold">{t('contact.title')}</h2><p className="mt-2 text-slate-600">{trustedContact ? trustedContact.name : t('profile.chooseContact')}</p></button><button onClick={() => navigate({name:'settings'})} className="rr-history-item text-left"><Settings className="mb-3 text-blue-700"/><h2 className="text-xl font-bold">{t('settings.title')}</h2><p className="mt-2 text-slate-600">{t('profile.settingsDetail')}</p></button></div><div className="mt-6 rounded-2xl bg-blue-50 p-5"><h2 className="font-bold">{t('profile.localTitle')}</h2><p className="mt-2 text-slate-600">{t('profile.localBody')}</p></div></Layout>;
+  const {navigate, trustedContact, t, settings} = useApp();
+  const privacy = featureText[settings.language].privacy;
+  return <Layout><h1 className="mb-6 flex items-center gap-3 text-3xl font-bold"><User/> {t('profile.title')}</h1><div className="grid gap-4 sm:grid-cols-2"><button onClick={() => navigate({name:'contact'})} className="rr-history-item text-left"><Phone className="mb-3 text-blue-700"/><h2 className="text-xl font-bold">{t('contact.title')}</h2><p className="mt-2 text-slate-600">{trustedContact ? trustedContact.name : t('profile.chooseContact')}</p></button><button onClick={() => navigate({name:'settings'})} className="rr-history-item text-left"><Settings className="mb-3 text-blue-700"/><h2 className="text-xl font-bold">{t('settings.title')}</h2><p className="mt-2 text-slate-600">{t('profile.settingsDetail')}</p></button><button onClick={() => navigate({name:'privacy'})} className="rr-history-item text-left sm:col-span-2"><ShieldCheck className="mb-3 text-blue-700"/><h2 className="text-xl font-bold">{privacy.title}</h2><p className="mt-2 text-slate-600">{privacy.subtitle}</p></button></div><div className="mt-6 rounded-2xl bg-blue-50 p-5"><h2 className="font-bold">{t('profile.localTitle')}</h2><p className="mt-2 text-slate-600">{t('profile.localBody')}</p></div></Layout>;
 }

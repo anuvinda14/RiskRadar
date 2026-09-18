@@ -11,7 +11,7 @@ const links = [
 
 function NavLinks({mobile = false}: {mobile?:boolean}) {
   const {navigate, route, t} = useApp();
-  const active = route.name === 'check' ? 'scan' : ['contact','settings'].includes(route.name) ? 'profile' : route.name;
+  const active = route.name === 'check' ? 'scan' : ['contact','settings','privacy'].includes(route.name) ? 'profile' : route.name;
   return <>{links.map(({name,labelKey,icon:Icon}) => <button key={name} aria-current={active === name ? 'page' : undefined} onClick={() => navigate({name} as Route)} className={`${mobile ? 'flex-1 flex-col gap-1 py-3 text-xs' : 'gap-2 px-4 py-3'} flex min-h-12 items-center justify-center rounded-xl font-semibold ${active === name ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-100'}`}><Icon size={23}/>{t(labelKey)}</button>)}</>;
 }
 export function Header() {
