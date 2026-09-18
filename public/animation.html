@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RiskRadar — Icon to Full Splash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* shared brand palette */
+    --bg-1:#0B1220;
+    --bg-2:#111A2E;
+    --phone-1:#1E2A42;
+    --phone-2:#0D1424;
+    --screen-1:#EAF1FF;
+    --screen-2:#C9D8F5;
+    --icon-alert:#F59E0B;
+    --alert-glow:#FBBF24;
+    --lens-glass:#93C5FD;
+    --lens-rim:#E8EEF7;
+    --handle:#4A5568;
+    --bubble:#FFFFFF;
+    --bubble-edge:#DCE3F0;
+
+    /* splash-specific aliases (original palette, unchanged) */
+    --bg:#0B0F1A;
+    --bg2:#141A2A;
+    --ink:#EAF1FF;
+    --scan:#4E63F0;
+    --glass:#BFE9FF;
+    --alert:#FF4757;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; height:100%; width:100%; overflow:hidden; }
+  body{
+    background: radial-gradient(140% 120% at 50% 20%, #16233F 0%, var(--bg-1) 60%);
+    font-family:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  .app{ position:relative; width:100vw; height:100vh; }
+
+  /* ================= LAUNCHER (icon) ================= */
+  .launcher-stage{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+    transition: opacity .45s ease, transform .45s ease;
+  }
+  .hint{
+    color:#6B7488; font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+    animation: hintPulse 2.2s ease-in-out infinite;
+  }
+  @keyframes hintPulse{ 0%,100%{opacity:.5;} 50%{opacity:1;} }
+
+  .icon-wrap{ perspective: 900px; width: 240px; height: 240px; cursor:pointer; }
+  .tile{
+    width:100%; height:100%; border-radius: 54px; position:relative;
+    transform-style:preserve-3d;
+    background:
+      radial-gradient(120% 140% at 22% 15%, #2563EB 0%, transparent 55%),
+      linear-gradient(155deg, var(--bg-2) 0%, var(--bg-1) 65%);
+    box-shadow:
+      0 30px 55px -18px rgba(10,14,30,.55),
+      0 8px 18px -6px rgba(10,14,30,.45),
+      inset 0 1px 1px rgba(255,255,255,.12),
+      inset 0 -14px 32px rgba(0,0,0,.35);
+    animation: tilt 6.5s ease-in-out infinite;
+    transition: transform .25s ease;
+  }
+  .icon-wrap:hover .tile{ transform: scale(1.04); }
+  .icon-wrap:active .tile{ transform: scale(.97); }
+  .tile::before{
+    content:""; position:absolute; inset:0; border-radius:54px;
+    background:linear-gradient(165deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 32%);
+    pointer-events:none;
+  }
+  @keyframes tilt{
+    0%,100% { transform: rotateX(6deg) rotateY(-10deg); }
+    50%     { transform: rotateX(-4deg) rotateY(9deg); }
+  }
+  .icon-wrap svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+
+  .phone-group{ transform: translateZ(15px); animation: sway 6.5s ease-in-out infinite; transform-origin: 160px 190px; }
+  @keyframes sway{ 0%,100%{transform:translateZ(15px) rotate(-1.5deg);} 50%{transform:translateZ(15px) rotate(1.5deg);} }
+  .buzz{ animation: buzz 3.4s ease-in-out infinite; transform-origin: 160px 190px; }
+  @keyframes buzz{
+    0%,8%,100%{transform:translateX(0);}
+    2%{transform:translateX(-3px) rotate(-.6deg);}
+    4%{transform:translateX(3px) rotate(.6deg);}
+    6%{transform:translateX(-2px);}
+  }
+  .bubble{ transform-box: fill-box; transform-origin: 50% 100%; animation: bubblePop 3.4s cubic-bezier(.34,1.4,.4,1) infinite; }
+  @keyframes bubblePop{
+    0%{opacity:0; transform:scale(.4) translateY(14px);}
+    12%{opacity:1; transform:scale(1.06) translateY(-2px);}
+    18%{opacity:1; transform:scale(1) translateY(0);}
+    78%{opacity:1; transform:scale(1) translateY(0);}
+    92%{opacity:0; transform:scale(.85) translateY(6px);}
+    100%{opacity:0;}
+  }
+  .lens-ping{ animation: lensPing 3.4s cubic-bezier(.3,.6,.3,1) infinite; transform-origin: 214px 92px; }
+  @keyframes lensPing{
+    0%,10%{opacity:0; transform:scale(.6);}
+    16%{opacity:.9;}
+    45%{opacity:0; transform:scale(2.1);}
+    100%{opacity:0; transform:scale(2.1);}
+  }
+  .screen-glow{ animation: screenGlow 3.4s ease-in-out infinite; }
+  @keyframes screenGlow{ 0%,10%{opacity:0;} 18%,75%{opacity:.55;} 92%,100%{opacity:0;} }
+  .magnifier{ transform-origin: 160px 160px; animation: inspect 3.4s cubic-bezier(.45,0,.2,1) infinite; }
+  @keyframes inspect{
+    0%{transform:translate(70px,72px) rotate(6deg) scale(.9); opacity:.85;}
+    20%{transform:translate(70px,72px) rotate(6deg) scale(.9); opacity:.85;}
+    38%{transform:translate(30px,20px) rotate(-4deg) scale(1.05); opacity:1;}
+    55%{transform:translate(24px,14px) rotate(-6deg) scale(1.1); opacity:1;}
+    56%{transform:translate(24px,14px) rotate(-6deg) scale(1.16); opacity:1;}
+    58%{transform:translate(24px,14px) rotate(-6deg) scale(1.1); opacity:1;}
+    78%{transform:translate(70px,72px) rotate(6deg) scale(.9); opacity:.85;}
+    100%{transform:translate(70px,72px) rotate(6deg) scale(.9); opacity:.85;}
+  }
+  .glint{ animation: glintMove 3.4s ease-in-out infinite; }
+  @keyframes glintMove{ 0%,45%{opacity:.15;} 56%,64%{opacity:.85;} 100%{opacity:.15;} }
+
+  /* ================= FULL-SCREEN SPLASH ================= */
+  .splash{
+    position:absolute; inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:
+      radial-gradient(110% 120% at 22% 12%, rgba(78,99,240,.30) 0%, transparent 56%),
+      radial-gradient(120% 90% at 50% 40%, var(--bg2) 0%, var(--bg) 66%);
+    overflow:hidden;
+    opacity:0; pointer-events:none;
+    transition: opacity .5s ease;
+  }
+  .splash.visible{ opacity:1; pointer-events:auto; }
+
+  .radar{
+    position:absolute;top:50%;left:50%;
+    width:min(520px,140%);aspect-ratio:1;
+    transform:translate(-50%,-50%);
+    opacity:0;
+  }
+  .ring{ position:absolute;inset:0;margin:auto;border-radius:50%; border:1px solid rgba(78,99,240,.26); }
+  .ring.r2{inset:14%} .ring.r3{inset:28%} .ring.r4{inset:42%}
+  .cross{position:absolute;inset:0;opacity:.5}
+  .cross:before,.cross:after{ content:"";position:absolute;background:rgba(78,99,240,.18); }
+  .cross:before{left:50%;top:0;bottom:0;width:1px}
+  .cross:after{top:50%;left:0;right:0;height:1px}
+  .sweep{
+    position:absolute;inset:0;border-radius:50%;
+    background:conic-gradient(from 0deg,
+      rgba(191,233,255,.50) 0deg, rgba(78,99,240,.30) 22deg,
+      rgba(78,99,240,0) 64deg, rgba(78,99,240,0) 360deg);
+    -webkit-mask:radial-gradient(circle, #000 68%, transparent 69%);
+            mask:radial-gradient(circle, #000 68%, transparent 69%);
+  }
+  .radar-ping{
+    position:absolute;top:50%;left:50%;width:18px;height:18px;margin:-9px 0 0 -9px;
+    border-radius:50%;border:2px solid var(--alert);opacity:0;
+  }
+
+  .wordmark{
+    position:relative;z-index:3;
+    display:flex;align-items:flex-start;justify-content:center;
+    font-weight:700; font-size:clamp(34px,11vw,44px);
+    letter-spacing:-.02em; color:var(--ink); line-height:1;
+    transform:scale(1.55); white-space:nowrap;
+  }
+  .ltr{display:block;line-height:1;opacity:0;text-shadow:0 0 30px rgba(78,99,240,.55), 0 0 60px rgba(191,233,255,.18)}
+  .grow{ display:block;line-height:1;overflow:hidden; width:0;opacity:0; white-space:nowrap; }
+  .wordmark.done .grow{width:auto !important;overflow:visible;opacity:1}
+
+  .rule{
+    z-index:3;margin-top:16px;height:2px;width:0;border-radius:2px;
+    background:linear-gradient(90deg,var(--alert),var(--scan) 55%,var(--glass));
+    opacity:0;
+  }
+  .tag{
+    z-index:3;margin-top:14px;
+    font-size:clamp(10px,3vw,11.5px); font-weight:500;
+    letter-spacing:.34em; text-transform:uppercase;
+    color:rgba(201,216,245,.66); text-align:center;padding:0 24px; opacity:0;
+  }
+
+  .playing .radar{animation:radarIn .7s ease-out .05s forwards, radarDim .8s ease-out 1.3s forwards}
+  .playing .sweep{animation:spin 2.1s linear infinite}
+  .playing .radar-ping{animation:radarPing .9s cubic-bezier(.2,.7,.3,1) .95s 1 both}
+  .playing .r1{animation:letterIn .62s cubic-bezier(.2,.8,.25,1) .18s forwards}
+  .playing .r2{animation:letterIn .62s cubic-bezier(.2,.8,.25,1) .32s forwards}
+  .playing .wordmark{animation:shrink .9s cubic-bezier(.65,0,.2,1) 1.25s forwards}
+  .playing .g1{animation:expand .8s cubic-bezier(.65,0,.2,1) 1.3s forwards}
+  .playing .g2{animation:expand .8s cubic-bezier(.65,0,.2,1) 1.38s forwards}
+  .playing .rule{animation:ruleIn .55s cubic-bezier(.2,.8,.25,1) 2.05s forwards}
+  .playing .tag{animation:tagIn .8s cubic-bezier(.2,.8,.25,1) 2.3s forwards}
+
+  @keyframes radarIn{from{opacity:0;transform:translate(-50%,-50%) scale(.82)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+  @keyframes radarDim{to{opacity:.28;transform:translate(-50%,-50%) scale(1.06)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes radarPing{ 0%{opacity:.9;transform:scale(.4)} 100%{opacity:0;transform:scale(9)} }
+  @keyframes letterIn{
+    0%{opacity:0;transform:translateY(16px) scale(.86);filter:blur(7px)}
+    100%{opacity:1;transform:none;filter:blur(0)}
+  }
+  @keyframes expand{ 0%{width:0;opacity:0} 25%{opacity:1} 100%{width:var(--w);opacity:1} }
+  @keyframes shrink{to{transform:scale(1)}}
+  @keyframes ruleIn{to{width:168px;opacity:1}}
+  @keyframes tagIn{
+    0%{opacity:0;transform:translateY(8px);letter-spacing:.5em}
+    100%{opacity:1;transform:none;letter-spacing:.34em}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important;animation-delay:0ms !important;animation-iteration-count:1!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <div class="launcher-stage" id="launcherStage">
+    <div class="icon-wrap" id="launchBtn" role="button" tabindex="0" aria-label="Open RiskRadar">
+      <div class="tile">
+        <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="phoneFill" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="var(--phone-1)"/>
+              <stop offset="100%" stop-color="var(--phone-2)"/>
+            </linearGradient>
+            <linearGradient id="screenFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--screen-1)"/>
+              <stop offset="100%" stop-color="var(--screen-2)"/>
+            </linearGradient>
+            <radialGradient id="lensGlass" cx="35%" cy="30%" r="75%">
+              <stop offset="0%" stop-color="#EAF7FF"/>
+              <stop offset="55%" stop-color="var(--lens-glass)"/>
+              <stop offset="100%" stop-color="#2563EB"/>
+            </radialGradient>
+            <linearGradient id="handleFill" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6B7688"/>
+              <stop offset="100%" stop-color="#333B49"/>
+            </linearGradient>
+            <radialGradient id="alertGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="var(--alert-glow)" stop-opacity=".95"/>
+              <stop offset="100%" stop-color="var(--alert-glow)" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="softShadow" x="-60%" y="-60%" width="220%" height="220%">
+              <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#000" flood-opacity="0.4"/>
+            </filter>
+            <filter id="bubbleShadow" x="-60%" y="-60%" width="220%" height="220%">
+              <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000" flood-opacity="0.3"/>
+            </filter>
+            <filter id="lensShadow" x="-80%" y="-80%" width="260%" height="260%">
+              <feDropShadow dx="0" dy="9" stdDeviation="9" flood-color="#000" flood-opacity="0.45"/>
+            </filter>
+          </defs>
+
+          <g class="phone-group buzz" filter="url(#softShadow)">
+            <rect x="104" y="66" width="112" height="220" rx="26" fill="url(#phoneFill)" stroke="#050710" stroke-width="3"/>
+            <rect x="116" y="86" width="88" height="172" rx="10" fill="url(#screenFill)"/>
+            <rect x="146" y="72" width="28" height="6" rx="3" fill="#050710" opacity=".6"/>
+            <circle cx="160" cy="270" r="7" fill="#050710" opacity=".5"/>
+            <rect x="128" y="104" width="60" height="8" rx="4" fill="#AFC0E4"/>
+            <rect x="128" y="120" width="44" height="8" rx="4" fill="#C3D0EC"/>
+            <rect x="128" y="220" width="52" height="8" rx="4" fill="#C3D0EC"/>
+            <rect x="128" y="236" width="36" height="8" rx="4" fill="#C3D0EC"/>
+            <rect class="screen-glow" x="116" y="86" width="88" height="172" rx="10" fill="url(#alertGlow)" opacity="0"/>
+          </g>
+
+          <g class="bubble" filter="url(#bubbleShadow)">
+            <rect x="118" y="118" width="150" height="66" rx="16" fill="var(--bubble)" stroke="var(--bubble-edge)" stroke-width="2"/>
+            <path d="M150 184 l-14 16 l24 -6 Z" fill="var(--bubble)" stroke="var(--bubble-edge)" stroke-width="2"/>
+            <circle cx="140" cy="151" r="14" fill="url(#alertGlow)"/>
+            <path d="M140 143 L148 158 L132 158 Z" fill="var(--icon-alert)"/>
+            <rect x="139" y="147" width="2.4" height="6" fill="#FFFFFF"/>
+            <circle cx="140.2" cy="155.5" r="1.3" fill="#FFFFFF"/>
+            <rect x="164" y="132" width="90" height="7" rx="3.5" fill="#2B3242"/>
+            <rect x="164" y="146" width="70" height="6" rx="3" fill="#8792A8"/>
+            <rect x="164" y="158" width="80" height="6" rx="3" fill="#8792A8"/>
+          </g>
+
+          <circle class="lens-ping" cx="214" cy="92" r="16" fill="none" stroke="var(--icon-alert)" stroke-width="4"/>
+
+          <g class="magnifier" filter="url(#lensShadow)">
+            <rect x="158" y="188" width="16" height="58" rx="8" transform="rotate(45 166 217)" fill="url(#handleFill)"/>
+            <circle cx="150" cy="150" r="50" fill="url(#lensGlass)" stroke="var(--lens-rim)" stroke-width="10"/>
+            <path class="glint" d="M120 122 A48 48 0 0 1 172 118" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+            <circle cx="150" cy="150" r="50" fill="none" stroke="#0E1650" stroke-width="2" opacity=".3"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="hint">Tap to open</div>
+  </div>
+
+  <div class="splash" id="splash">
+    <div class="radar">
+      <div class="ring"></div><div class="ring r2"></div>
+      <div class="ring r3"></div><div class="ring r4"></div>
+      <div class="cross"></div>
+      <div class="sweep"></div>
+      <div class="radar-ping"></div>
+    </div>
+
+    <div class="wordmark" id="wordmark">
+      <span class="ltr r1">R</span><span class="grow g1">isk</span><span class="ltr r2">R</span><span class="grow g2">adar</span>
+    </div>
+
+    <div class="rule"></div>
+    <div class="tag">Detect the danger before it strikes</div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var launcherStage = document.getElementById('launcherStage');
+  var launchBtn     = document.getElementById('launchBtn');
+  var splash        = document.getElementById('splash');
+  var wordmark      = document.getElementById('wordmark');
+  var grows         = splash.querySelectorAll('.grow');
+
+  var probe = document.createElement('span');
+  probe.setAttribute('aria-hidden','true');
+  probe.style.cssText = 'position:absolute;left:-9999px;top:0;white-space:pre;visibility:hidden';
+  document.body.appendChild(probe);
+
+  function widthOf(text){
+    probe.textContent = text;
+    return probe.getBoundingClientRect().width;
+  }
+
+  function measure(){
+    var cs = getComputedStyle(wordmark);
+    probe.style.font = cs.font;
+    probe.style.fontWeight = cs.fontWeight;
+    probe.style.fontFamily = cs.fontFamily;
+    probe.style.fontSize = cs.fontSize;
+    probe.style.letterSpacing = cs.letterSpacing;
+
+    var wR     = widthOf('R');
+    var wRisk  = widthOf('Risk');
+    var wRiskR = widthOf('RiskR');
+    var wAll   = widthOf('RiskRadar');
+
+    grows[0].style.setProperty('--w', Math.max(0, wRisk - wR).toFixed(2) + 'px');
+    grows[1].style.setProperty('--w', Math.max(0, wAll - wRiskR).toFixed(2) + 'px');
+  }
+
+  grows[1].addEventListener('animationend', function(e){
+    if(e.animationName === 'expand') wordmark.classList.add('done');
+  });
+
+  function playSplash(){
+    splash.classList.remove('playing');
+    wordmark.classList.remove('done');
+    measure();
+    void splash.offsetWidth;
+    splash.classList.add('playing');
+  }
+
+  function openApp(){
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      parent.postMessage({type:'riskradar-intro-complete'}, location.origin); return;
+    }
+    launcherStage.style.opacity = '0';
+    launcherStage.style.transform = 'scale(.7)';
+    launcherStage.style.pointerEvents = 'none';
+
+    splash.classList.add('visible');
+    setTimeout(function(){parent.postMessage({type:'riskradar-intro-complete'}, location.origin);}, 3700);
+
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(playSplash);
+    } else {
+      playSplash();
+    }
+  }
+
+  function closeApp(){
+    splash.classList.remove('visible','playing');
+    wordmark.classList.remove('done');
+
+    launcherStage.style.opacity = '1';
+    launcherStage.style.transform = 'scale(1)';
+    launcherStage.style.pointerEvents = 'auto';
+  }
+
+  launchBtn.addEventListener('click', openApp);
+  launchBtn.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openApp(); } });
+})();
+</script>
+</body>
+</html>
