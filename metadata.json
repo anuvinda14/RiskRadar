@@ -17,7 +17,7 @@
     "f1": 0.995496,
     "roc_auc": 0.999626
   },
-  "trained_at_utc": "2026-09-18T05:01:13.306182+00:00",
+  "trained_at_utc": "2026-09-18T18:38:21.125154+00:00",
   "random_state": 42,
   "limitations": [
     "The training data is predominantly English email, not modern WhatsApp/SMS data.",
